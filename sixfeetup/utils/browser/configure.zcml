@@ -1,0 +1,15 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="sixfeetup.utils">
+
+  <browser:page
+      for="*"
+      name="reference_utils"
+      class=".references.ReferenceUtils"
+      permission="zope.Public"
+      allowed_interface=".references.IReferenceUtils"
+      />
+
+</configure>

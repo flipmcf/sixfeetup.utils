@@ -1,0 +1,15 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+  <adapter
+     factory="Products.CMFPlone.exportimport.propertiestool.SimpleItemWithPropertiesXMLAdapter"
+     provides="Products.GenericSetup.interfaces.IBody"
+     for="OFS.interfaces.IPropertyManager
+          .objectproperties.IObjectPropertiesSetupEnviron" />
+
+  <adapter
+     factory=".objectproperties.ObjectPropertiesXMLAdapter"
+     provides="Products.GenericSetup.interfaces.IBody"
+     for="Products.CMFCore.interfaces.ISiteRoot
+          .objectproperties.IObjectPropertiesSetupEnviron" />
+
+</configure>

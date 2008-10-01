@@ -1,0 +1,25 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="sixfeetup.utils">
+
+  <include package=".browser"/>
+  <include package=".exportimport"/>
+
+  <genericsetup:importStep
+      name="objectproperties"
+      title="Object Properties"
+      description="Import the properties to be applied to objects"
+      handler="sixfeetup.utils.exportimport.objectproperties.importObjectProperties">
+    <depends name="content"/>
+  </genericsetup:importStep>
+
+  <genericsetup:exportStep
+      name="objectproperties"
+      title="Object Properties"
+      description="Export the properties added to objects"
+      handler="sixfeetup.utils.exportimport.objectproperties.exportObjectProperties"
+      />
+
+</configure>
