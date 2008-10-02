@@ -1,4 +1,5 @@
 import logging
+from DateTime import DateTime
 from Testing.makerequest import makerequest
 from Products.CMFCore.utils import getToolByName
 from Products.GenericSetup.upgrade import _upgrade_registry
@@ -7,6 +8,37 @@ from Products.GenericSetup.interfaces import IFilesystemImporter
 from Products.CMFPlone.utils import base_hasattr
 
 logger = logging.getLogger(__name__)
+
+#####################################################
+# Random bits and pieces of code that could be useful
+
+def getPortalObj(context):
+    """Is this really necessary?  Use @@plone_<helpers>?
+    """
+    return getToolByName(context, 'portal_url').getPortalObject()
+
+def dateForProcessForm(field, date_string, form_dict=None):
+    """Take a date string and convert it into the keys that processForm
+    expects
+    
+    If form_dict is not passed in a dictionary will be passed back. Otherwise
+    the form dictionary will be updated.
+    """
+    time_date = DateTime(date_string)
+    will_return = False
+    if form_dict is None:
+        will_return = True
+        form_dict = {}
+    form_dict['%s_year' % field] = time_date.year()
+    form_dict['%s_month' % field] = time_date.month()
+    form_dict['%s_day' % field] = time_date.day()
+    form_dict['%s_hour' % field] = time_date.hour()
+    form_dict['%s_minute' % field] = time_date.minute()
+    if will_return:
+        return form_dict
+
+######################################################
+# Helpers for GenericSetup upgrades and setup handlers
 
 def updateCatalog(site):
     """Update the catalog
