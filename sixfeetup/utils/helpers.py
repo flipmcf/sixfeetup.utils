@@ -4,7 +4,6 @@ from Testing.makerequest import makerequest
 from Products.CMFCore.utils import getToolByName
 from Products.GenericSetup.upgrade import _upgrade_registry
 from Products.GenericSetup.registry import _profile_registry
-from Products.GenericSetup.interfaces import IFilesystemImporter
 from Products.CMFPlone.utils import base_hasattr
 
 logger = logging.getLogger(__name__)
@@ -125,10 +124,8 @@ def publishEverything(site, path=None, transition='published'):
         except:
             logger.debug("\ncouldn't publish %s\n**********\n" % obj.Title())
 
-def runMigrationProfile(context, profile_id, structure=False):
-    """Run a migration profile as an upgrade step.  It is important to pass in
-    the context that is given to the upgrade step method here.  We have to do
-    some craziness to make the structure work properly.
+def runMigrationProfile(context, profile_id):
+    """Run a migration profile as an upgrade step
     
     profile_id in the form::
     
@@ -137,18 +134,10 @@ def runMigrationProfile(context, profile_id, structure=False):
     example::
     
       profile-my.package:migration-2008-09-23
-    
-    If structure is True then it will do some special magic for a profile that
-    has a structure folder.
     """
-    if structure:
-        import_context = context._getImportContext(profile_id)
-        site = import_context.getSite()
-        IFilesystemImporter(site).import_(import_context, 'structure', True)
-    else:
-        site = context.getParentNode()
-        setup_tool = getToolByName(site, 'portal_setup')
-        setup_tool.runAllImportStepsFromProfile(profile_id)
+    portal = getPortalObj(context)
+    setup_tool = getToolByName(portal, 'portal_setup')
+    setup_tool.runAllImportStepsFromProfile(profile_id)
 
 def clearLocks(site, path=None):
     """Little util method to clear locks recursively on a given path
