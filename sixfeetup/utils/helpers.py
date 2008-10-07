@@ -39,18 +39,18 @@ def dateForProcessForm(field, date_string, form_dict=None):
 ######################################################
 # Helpers for GenericSetup upgrades and setup handlers
 
-def updateCatalog(site):
+def updateCatalog(portal):
     """Update the catalog
     """
     logger.info('****** updateCatalog BEGIN ******')
-    pc = getToolByName(site, 'portal_catalog')
+    pc = getToolByName(portal, 'portal_catalog')
     pc.refreshCatalog()
     logger.info('****** updateCatalog END ******')
 
-def updateSecurity(site):
+def updateSecurity(portal):
     """Run the update security on the workflow tool"""
     logger.info('****** updateSecurity BEGIN ******')
-    wtool = getToolByName(site, 'portal_workflow')
+    wtool = getToolByName(portal, 'portal_workflow')
     wtool.updateRoleMappings()
     logger.info('****** updateSecurity END ******')
 
@@ -99,21 +99,22 @@ def runUpgradeSteps(site, profile_id):
 
     logger.info('****** runUpgradeSteps END ******')
 
-def publishEverything(site, path=None, transition='published'):
+def publishEverything(site, path=None, transition='published', recursive=True):
     """Publishes all content that has the given transition
     
-    Pass in a path to publish the contents of a specific section.  The path is
-    relative to the root.  If your site id is Plone and you pass in
-    /foo/bar/baz the path will end up being /Plone/foo/bar/baz
+    Pass in a PhysicalPath to publish a specific section
     """
     pc = getToolByName(site, 'portal_catalog')
     portal = site.portal_url.getPortalObject()
+    query = {}
     if path is None:
-        path = '/'
+        query['path'] = "/%s" % portal.id
     else:
-        path = "/%s%s" % (portal.id, path)
-    results = pc(path=path)
-    for result in results:
+        query['path'] = path
+    if not recursive:
+        query['path'] = {'query': query['path'], 'depth': 0}
+    res = pc(query)
+    for result in res:
         obj = result.getObject()
         try:
             obj.portal_workflow.doActionFor(
@@ -124,7 +125,7 @@ def publishEverything(site, path=None, transition='published'):
         except:
             logger.debug("\ncouldn't publish %s\n**********\n" % obj.Title())
 
-def runMigrationProfile(context, profile_id):
+def runMigrationProfile(portal, profile_id):
     """Run a migration profile as an upgrade step
     
     profile_id in the form::
@@ -135,27 +136,24 @@ def runMigrationProfile(context, profile_id):
     
       profile-my.package:migration-2008-09-23
     """
-    portal = getPortalObj(context)
     setup_tool = getToolByName(portal, 'portal_setup')
     setup_tool.runAllImportStepsFromProfile(profile_id)
 
-def clearLocks(site, path=None):
-    """Little util method to clear locks recursively on a given path
+def clearLocks(portal, path=None, recursive=True):
+    """Little util method to clear locks on a given path
     
-    Pass in a path to remove locks of a specific section.  If your site id is
-    Plone and you pass in /foo/bar/baz the path will end up being 
-    /Plone/foo/bar/baz
+    Pass in a PhysicalPath to restrict to a specific section
     """
-    msg = '****** claering all locks for %s in %s ******' % (path, site.id)
-    logger.info(msg)
-    pu = getToolByName(site, 'portal_url')
-    portal = pu.getPortalObject()
-    pc = getToolByName(site, 'portal_catalog')
+    pc = getToolByName(portal, 'portal_catalog')
+    query = {}
     if path is None:
-        path = '/'
+        query['path'] = "/%s" % portal.id
     else:
-        path = "/%s%s" % (portal.id, path)
-    for item in pc(path=path):
+        query['path'] = path
+    if not recursive:
+        query['path'] = {'query': query['path'], 'depth': 0}
+    res = pc(query)
+    for item in res:
         obj_path = '/'.join(item.getObject().getPhysicalPath())
         lock_info = '%s/@@plone_lock_info' % obj_path
         locked = portal.restrictedTraverse(lock_info).is_locked()
@@ -163,7 +161,7 @@ def clearLocks(site, path=None):
             lock_ops = '%s/@@plone_lock_operations' % obj_path
             portal.restrictedTraverse(lock_ops).force_unlock(redirect=False)
 
-def addUserAccounts(site, member_dicts=[]):
+def addUserAccounts(portal, member_dicts=[]):
     """Add user accounts into the system
     
     Member dictionaries are in the following format::
@@ -182,7 +180,7 @@ def addUserAccounts(site, member_dicts=[]):
     Additional properties can be added in the properties item and will
     be passed along to the registration tool.
     """
-    rtool = getToolByName(site, 'portal_registration')
+    rtool = getToolByName(portal, 'portal_registration')
     rta = rtool.addMember
     for mem in member_dicts:
         try:
@@ -196,7 +194,7 @@ def addUserAccounts(site, member_dicts=[]):
             msg = '\nlogin id %s is already taken...\n*********\n' % mem['id']
             logger.debug(msg)
 
-def addRememberUserAccounts(site,
+def addRememberUserAccounts(portal,
                             member_dicts=[],
                             initial_transition="register_private",
                             send_emails=False):
@@ -221,15 +219,13 @@ def addRememberUserAccounts(site,
     
     If send_emails is True then registration emails will be sent out to the users
     """
-    utool = getToolByName(site, 'portal_url')
-    portal = utool.getPortalObject()
     # store the current prop
     current_setting = portal.validate_email
     if not send_emails:
         # Turn off email validation
         portal.validate_email = 0
-    mdata = getToolByName(site, 'portal_memberdata')
-    wftool = getToolByName(site, 'portal_workflow')
+    mdata = getToolByName(portal, 'portal_memberdata')
+    wftool = getToolByName(portal, 'portal_workflow')
     existing_members = mdata.contentIds()
     for mem in member_dicts:
         if mem['id'] not in existing_members:
@@ -250,7 +246,7 @@ def addRememberUserAccounts(site,
     # but the property back
     portal.validate_email = current_setting
 
-def updateSchema(site,
+def updateSchema(portal,
                  update_types=[],
                  update_all=False,
                  remove_inst_schemas=True):
@@ -265,8 +261,7 @@ def updateSchema(site,
       ATContentTypes.ATDocument
       my.package.SomeType
     """
-    portal_obj = getToolByName(site, 'portal_url').getPortalObject()
-    portal = makerequest(portal_obj)
+    portal = makerequest(portal)
     req = portal.REQUEST
     req.form['update_all'] = update_all
     req.form['remove_instance_schemas'] = remove_inst_schemas
