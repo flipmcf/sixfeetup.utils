@@ -54,6 +54,30 @@ def updateSecurity(portal):
     wtool.updateRoleMappings()
     logger.info('****** updateSecurity END ******')
 
+# GenericSetup forces a redirect on some of these methods, we are
+# basically rewriting them here without that.
+def deleteImportSteps(portal, ids):
+    """Remove a list of import step IDs
+    """
+    setup_tool = getToolByName(portal, 'portal_setup')
+    for step_id in ids:
+        try:
+            setup_tool._import_registry.unregisterStep(step_id)
+        except KeyError:
+            logger.info('Could not remove import step: %s' % step_id)
+    setup_tool._p_changed = True
+
+def deleteExportSteps(portal, ids):
+    """Remove a list of export step IDs
+    """
+    setup_tool = getToolByName(portal, 'portal_setup')
+    for step_id in ids:
+        try:
+            setup_tool._export_registry.unregisterStep(step_id)
+        except KeyError:
+            logger.info('Could not remove import step: %s' % step_id)
+    setup_tool._p_changed = True
+
 def runUpgradeSteps(site, profile_id):
     """run the upgrade steps for the given profile_id in the form of:
     
