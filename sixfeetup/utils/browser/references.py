@@ -21,29 +21,32 @@ class ReferenceUtils(BrowserView):
     """
     implements(IReferenceUtils)
     
-    def _processRefs(refs, sort_on):
+    def _processRefs(self, refs, sort_on, reverse):
         """util method to run the refs through LazyFilter
         """
         filtered_refs = []
         if refs and refs is not None:
-            if not isinstance(list, refs):
+            if not isinstance(refs, list):
                 refs = [refs]
             filtered_refs = list(LazyFilter(refs, skip='View'))
         if sort_on is not None:
             filtered_refs.sort(lambda x, y: cmp(x.getField(sort_on).get(x),
                                                 y.getField(sort_on).get(y)))
+            if reverse:
+                filtered_refs.reverse()
         return filtered_refs
     
-    def getFilteredRefs(self, obj, relationship, sort_on=None):
+    def getFilteredRefs(self, obj, relationship, sort_on=None, reverse=False):
         """see IReferenceUtils for documentation
         """
         filtered_refs = []
         refs = obj.getRefs(relationship)
-        return self._processRefs(refs, sort_on)
+        return self._processRefs(refs, sort_on, reverse)
     
-    def getFilteredBRefs(self, obj, relationship, sort_on=None):
+    def getFilteredBRefs(self, obj, relationship, sort_on=None, reverse=False):
         """see IReferenceUtils for documentation
         """
         filtered_refs = []
         refs = obj.getBRefs(relationship)
-        return self._processRefs(refs, sort_on)
+        return self._processRefs(refs, sort_on, reverse)
+
