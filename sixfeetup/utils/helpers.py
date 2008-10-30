@@ -16,25 +16,28 @@ def getPortalObj(context):
     """
     return getToolByName(context, 'portal_url').getPortalObject()
 
-def dateForProcessForm(field, date_string, form_dict=None):
-    """Take a date string and convert it into the keys that processForm
-    expects
+def dateForProcessForm(field, field_date, form_dict=None):
+    """Take a DateTime object or string and convert it into the keys that
+    processForm expects
     
     If form_dict is not passed in a dictionary will be passed back. Otherwise
     the form dictionary will be updated.
     """
-    time_date = DateTime(date_string)
+    if not isinstance(field_date, DateTime):
+        field_date = DateTime(field_date)
     will_return = False
     if form_dict is None:
         will_return = True
         form_dict = {}
-    form_dict['%s_year' % field] = time_date.year()
-    form_dict['%s_month' % field] = time_date.month()
-    form_dict['%s_day' % field] = time_date.day()
-    form_dict['%s_hour' % field] = time_date.hour()
-    form_dict['%s_minute' % field] = time_date.minute()
-    if will_return:
-        return form_dict
+    form_dict[field] = field_date.ISO()
+    form_dict['%s_year' % field] = field_date.year()
+    form_dict['%s_month' % field] = field_date.month()
+    form_dict['%s_day' % field] = field_date.day()
+    form_dict['%s_hour' % field] = field_date.hour()
+    form_dict['%s_minute' % field] = field_date.minute()
+    if not will_return:
+        return
+    return form_dict
 
 ######################################################
 # Helpers for GenericSetup upgrades and setup handlers
