@@ -205,7 +205,7 @@ def addUserAccounts(portal, member_dicts=[]):
     
       {
         'id': 'joeblow',
-        'password': '12345'
+        'password': '12345',
         'roles': ['Manager', 'Member'],
         'properties': {
           'email': 'joe@example.com',
