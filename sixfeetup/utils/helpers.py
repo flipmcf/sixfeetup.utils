@@ -5,12 +5,22 @@ from Products.CMFCore.utils import getToolByName
 from Products.GenericSetup.upgrade import _upgrade_registry
 from Products.GenericSetup.registry import _profile_registry
 from Products.CMFPlone.utils import base_hasattr
+from Products.GenericSetup.context import DirectoryImportContext
+
 
 logger = logging.getLogger(__name__)
 
 #####################################################
 # Random bits and pieces of code that could be useful
 
+def getSiteObj(site):
+	"""Return a site object depending on whether it is a 
+	import context or a upgrade step context
+	"""
+	if isinstance(site, DirectoryImportContext):
+		return site.getSite()
+	return getToolByName(site, 'portal_url').getPortalObject()
+	
 def getPortalObj(context):
     """Is this really necessary?  Use @@plone_<helpers>?
     """
@@ -131,8 +141,8 @@ def publishEverything(site, path=None, transition='published', recursive=True):
     
     Pass in a PhysicalPath to publish a specific section
     """
-    pc = getToolByName(site, 'portal_catalog')
-    portal = site.portal_url.getPortalObject()
+    portal = getSiteObj(site)
+    pc = getToolByName(portal, 'portal_catalog')
     query = {}
     if path is None:
         query['path'] = "/%s" % portal.id
