@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 # Random bits and pieces of code that could be useful
 
 def getSiteObj(site):
-	"""Return a site object depending on whether it is a 
-	import context or a upgrade step context
-	"""
-	if isinstance(site, DirectoryImportContext):
-		return site.getSite()
-	return getToolByName(site, 'portal_url').getPortalObject()
-	
+    """Return a site object depending on whether it is a 
+    import context or a upgrade step context
+    """
+    if isinstance(site, DirectoryImportContext):
+        return site.getSite()
+    return getToolByName(site, 'portal_url').getPortalObject()
+    
 def getPortalObj(context):
     """Is this really necessary?  Use @@plone_<helpers>?
     """
@@ -323,3 +323,11 @@ def setPolicyOnObject(obj, policy_in=None, policy_below=None):
             config.setPolicyIn(policy=policy_in)
         if policy_below is not None:
             config.setPolicyBelow(policy=policy_below)
+
+def runPortalMigration(site):
+    """Run any migrations that are pending
+    """
+    portal = getSiteObj(site)
+    pm = getToolByName(site, 'portal_migration')
+    if pm.needUpgrading():
+        pm.upgrade()
