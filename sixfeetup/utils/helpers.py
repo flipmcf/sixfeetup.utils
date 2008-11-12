@@ -59,6 +59,14 @@ def updateCatalog(portal):
     pc = getToolByName(portal, 'portal_catalog')
     pc.refreshCatalog()
     logger.info('****** updateCatalog END ******')
+    
+def clearAndRebuildCatalog(portal):
+    """Clear and rebuild the catalog
+    """
+    logger.info('****** clearAndRebuildCatalog BEGIN ******')
+    pc = getToolByName(portal, 'portal_catalog')
+    pc.clearFindAndRebuild()
+    logger.info('****** clearAndRebuildCatalog END ******')
 
 def updateSecurity(portal):
     """Run the update security on the workflow tool"""
