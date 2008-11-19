@@ -339,3 +339,12 @@ def runPortalMigration(site):
     pm = getToolByName(site, 'portal_migration')
     if pm.needUpgrading():
         pm.upgrade()
+
+def removeCustomFolderContent(site):
+    """Remove everything in portal_skins/custom
+    """
+    skins_tool = getToolByName(site, 'portal_skins')
+    cf = skins_tool.custom
+    cf_ids = cf.objectIds()
+    # goodbye EVIL!!!
+    cf.manage_delObjects(cf_ids)
