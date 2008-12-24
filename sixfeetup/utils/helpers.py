@@ -144,7 +144,7 @@ def runUpgradeSteps(site, profile_id):
 
     logger.info('****** runUpgradeSteps END ******')
 
-def publishEverything(site, path=None, transition='published', recursive=True):
+def publishEverything(site, path=None, transition='publish', recursive=True):
     """Publishes all content that has the given transition
     
     Pass in a PhysicalPath to publish a specific section
