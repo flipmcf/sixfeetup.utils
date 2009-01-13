@@ -168,8 +168,6 @@ def publishEverything(site, path=None, transition='publish', recursive=True):
                 transition,
                 comment='Content published automatically'
             )
-            # reindex the object so the catalog is aware of the new state
-            obj.reindexObject()
         except WorkflowException:
             logger.debug("\ncouldn't publish %s\n**********\n" % obj.Title())
 
