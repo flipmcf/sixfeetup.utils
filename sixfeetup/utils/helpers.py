@@ -6,6 +6,7 @@ from Products.GenericSetup.upgrade import _upgrade_registry
 from Products.GenericSetup.registry import _profile_registry
 from Products.CMFPlone.utils import base_hasattr
 from Products.GenericSetup.context import DirectoryImportContext
+from Products.CMFCore.WorkflowCore import WorkflowException
 
 
 logger = logging.getLogger(__name__)
@@ -167,7 +168,9 @@ def publishEverything(site, path=None, transition='publish', recursive=True):
                 transition,
                 comment='Content published automatically'
             )
-        except:
+            # reindex the object so the catalog is aware of the new state
+            obj.reindexObject()
+        except WorkflowException:
             logger.debug("\ncouldn't publish %s\n**********\n" % obj.Title())
 
 def runMigrationProfile(portal, profile_id):
