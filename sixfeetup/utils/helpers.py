@@ -41,7 +41,7 @@ def dateForProcessForm(field, field_date, form_dict=None):
 ######################################################
 # Helpers for GenericSetup upgrades and setup handlers
 
-def updateCatalog():
+def updateCatalog(context=None):
     """Update the catalog
     """
     logger.info('****** updateCatalog BEGIN ******')
@@ -50,7 +50,7 @@ def updateCatalog():
     pc.refreshCatalog()
     logger.info('****** updateCatalog END ******')
     
-def clearAndRebuildCatalog():
+def clearAndRebuildCatalog(context=None):
     """Clear and rebuild the catalog
     """
     logger.info('****** clearAndRebuildCatalog BEGIN ******')
@@ -59,7 +59,7 @@ def clearAndRebuildCatalog():
     pc.clearFindAndRebuild()
     logger.info('****** clearAndRebuildCatalog END ******')
 
-def updateSecurity():
+def updateSecurity(context=None):
     """Run the update security on the workflow tool"""
     logger.info('****** updateSecurity BEGIN ******')
     portal = getSite()
@@ -139,7 +139,7 @@ def runUpgradeSteps(profile_id):
 
     logger.info('****** runUpgradeSteps END ******')
 
-def publishEverything(path=None, transition='publish', recursive=True):
+def publishEverything(context=None, path=None, transition='publish', recursive=True):
     """Publishes all content that has the given transition
     
     Pass in a PhysicalPath to publish a specific section
@@ -180,7 +180,7 @@ def runMigrationProfile(profile_id):
     setup_tool = getToolByName(portal, 'portal_setup')
     setup_tool.runAllImportStepsFromProfile(profile_id)
 
-def clearLocks(path=None, recursive=True):
+def clearLocks(context=None, path=None, recursive=True):
     """Little util method to clear locks on a given path
     
     Pass in a PhysicalPath to restrict to a specific section
@@ -330,7 +330,7 @@ def setPolicyOnObject(obj, policy_in=None, policy_below=None):
         if policy_below is not None:
             config.setPolicyBelow(policy=policy_below)
 
-def runPortalMigration():
+def runPortalMigration(context=None):
     """Run any migrations that are pending
     """
     portal = getSite()
@@ -338,7 +338,7 @@ def runPortalMigration():
     if pm.needUpgrading():
         pm.upgrade()
 
-def removeCustomFolderContent():
+def removeCustomFolderContent(context=None):
     """Remove everything in portal_skins/custom
     """
     portal = getSite()
