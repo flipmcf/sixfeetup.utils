@@ -1,11 +1,12 @@
 import logging
+from zope.app.component.hooks import getSite
 from DateTime import DateTime
 from Testing.makerequest import makerequest
+
 from Products.CMFCore.utils import getToolByName
 from Products.GenericSetup.upgrade import _upgrade_registry
 from Products.GenericSetup.registry import _profile_registry
 from Products.CMFPlone.utils import base_hasattr
-from Products.GenericSetup.context import DirectoryImportContext
 from Products.CMFCore.WorkflowCore import WorkflowException
 
 
@@ -13,19 +14,6 @@ logger = logging.getLogger(__name__)
 
 #####################################################
 # Random bits and pieces of code that could be useful
-
-def getSiteObj(site):
-    """Return a site object depending on whether it is a 
-    import context or a upgrade step context
-    """
-    if isinstance(site, DirectoryImportContext):
-        return site.getSite()
-    return getToolByName(site, 'portal_url').getPortalObject()
-    
-def getPortalObj(context):
-    """Is this really necessary?  Use @@plone_<helpers>?
-    """
-    return getToolByName(context, 'portal_url').getPortalObject()
 
 def dateForProcessForm(field, field_date, form_dict=None):
     """Take a DateTime object or string and convert it into the keys that
@@ -53,34 +41,38 @@ def dateForProcessForm(field, field_date, form_dict=None):
 ######################################################
 # Helpers for GenericSetup upgrades and setup handlers
 
-def updateCatalog(portal):
+def updateCatalog():
     """Update the catalog
     """
     logger.info('****** updateCatalog BEGIN ******')
+    portal = getSite()
     pc = getToolByName(portal, 'portal_catalog')
     pc.refreshCatalog()
     logger.info('****** updateCatalog END ******')
     
-def clearAndRebuildCatalog(portal):
+def clearAndRebuildCatalog():
     """Clear and rebuild the catalog
     """
     logger.info('****** clearAndRebuildCatalog BEGIN ******')
+    portal = getSite()
     pc = getToolByName(portal, 'portal_catalog')
     pc.clearFindAndRebuild()
     logger.info('****** clearAndRebuildCatalog END ******')
 
-def updateSecurity(portal):
+def updateSecurity():
     """Run the update security on the workflow tool"""
     logger.info('****** updateSecurity BEGIN ******')
+    portal = getSite()
     wtool = getToolByName(portal, 'portal_workflow')
     wtool.updateRoleMappings()
     logger.info('****** updateSecurity END ******')
 
 # GenericSetup forces a redirect on some of these methods, we are
 # basically rewriting them here without that.
-def deleteImportSteps(portal, ids):
+def deleteImportSteps(ids):
     """Remove a list of import step IDs
     """
+    portal = getSite()
     setup_tool = getToolByName(portal, 'portal_setup')
     for step_id in ids:
         try:
@@ -89,9 +81,10 @@ def deleteImportSteps(portal, ids):
             logger.info('Could not remove import step: %s' % step_id)
     setup_tool._p_changed = True
 
-def deleteExportSteps(portal, ids):
+def deleteExportSteps(ids):
     """Remove a list of export step IDs
     """
+    portal = getSite()
     setup_tool = getToolByName(portal, 'portal_setup')
     for step_id in ids:
         try:
@@ -100,7 +93,7 @@ def deleteExportSteps(portal, ids):
             logger.info('Could not remove import step: %s' % step_id)
     setup_tool._p_changed = True
 
-def runUpgradeSteps(site, profile_id):
+def runUpgradeSteps(profile_id):
     """run the upgrade steps for the given profile_id in the form of:
     
     profile-<package_name>:<profile_name>
@@ -113,7 +106,8 @@ def runUpgradeSteps(site, profile_id):
     form.  Had to extract the code because it was doing a redirect back to the
     upgrades form in the GS tool.
     """
-    setup_tool = getToolByName(site, 'portal_setup')
+    portal = getSite()
+    setup_tool = getToolByName(portal, 'portal_setup')
     logger.info('****** runUpgradeSteps BEGIN ******')
     upgrade_steps = setup_tool.listUpgrades(profile_id)
     steps_to_run = []
@@ -145,12 +139,12 @@ def runUpgradeSteps(site, profile_id):
 
     logger.info('****** runUpgradeSteps END ******')
 
-def publishEverything(site, path=None, transition='publish', recursive=True):
+def publishEverything(path=None, transition='publish', recursive=True):
     """Publishes all content that has the given transition
     
     Pass in a PhysicalPath to publish a specific section
     """
-    portal = getSiteObj(site)
+    portal = getSite()
     pc = getToolByName(portal, 'portal_catalog')
     query = {}
     if path is None:
@@ -171,7 +165,7 @@ def publishEverything(site, path=None, transition='publish', recursive=True):
         except WorkflowException:
             logger.debug("\ncouldn't publish %s\n**********\n" % obj.Title())
 
-def runMigrationProfile(portal, profile_id):
+def runMigrationProfile(profile_id):
     """Run a migration profile as an upgrade step
     
     profile_id in the form::
@@ -182,14 +176,16 @@ def runMigrationProfile(portal, profile_id):
     
       profile-my.package:migration-2008-09-23
     """
+    portal = getSite()
     setup_tool = getToolByName(portal, 'portal_setup')
     setup_tool.runAllImportStepsFromProfile(profile_id)
 
-def clearLocks(portal, path=None, recursive=True):
+def clearLocks(path=None, recursive=True):
     """Little util method to clear locks on a given path
     
     Pass in a PhysicalPath to restrict to a specific section
     """
+    portal = getSite()
     pc = getToolByName(portal, 'portal_catalog')
     query = {}
     if path is None:
@@ -207,7 +203,7 @@ def clearLocks(portal, path=None, recursive=True):
             lock_ops = '%s/@@plone_lock_operations' % obj_path
             portal.restrictedTraverse(lock_ops).force_unlock(redirect=False)
 
-def addUserAccounts(portal, member_dicts=[]):
+def addUserAccounts(member_dicts=[]):
     """Add user accounts into the system
     
     Member dictionaries are in the following format::
@@ -226,6 +222,7 @@ def addUserAccounts(portal, member_dicts=[]):
     Additional properties can be added in the properties item and will
     be passed along to the registration tool.
     """
+    portal = getSite()
     rtool = getToolByName(portal, 'portal_registration')
     rta = rtool.addMember
     for mem in member_dicts:
@@ -240,8 +237,7 @@ def addUserAccounts(portal, member_dicts=[]):
             msg = '\nlogin id %s is already taken...\n*********\n' % mem['id']
             logger.debug(msg)
 
-def addRememberUserAccounts(portal,
-                            member_dicts=[],
+def addRememberUserAccounts(member_dicts=[],
                             initial_transition="register_private",
                             send_emails=False):
     """Add remember user accounts into the system
@@ -265,6 +261,7 @@ def addRememberUserAccounts(portal,
     
     If send_emails is True then registration emails will be sent out to the users
     """
+    portal = getSite()
     # store the current prop
     current_setting = portal.validate_email
     if not send_emails:
@@ -292,8 +289,7 @@ def addRememberUserAccounts(portal,
     # but the property back
     portal.validate_email = current_setting
 
-def updateSchema(portal,
-                 update_types=[],
+def updateSchema(update_types=[],
                  update_all=False,
                  remove_inst_schemas=True):
     """Update archetype schemas for specific types
@@ -307,6 +303,7 @@ def updateSchema(portal,
       ATContentTypes.ATDocument
       my.package.SomeType
     """
+    portal = getSite()
     portal = makerequest(portal)
     req = portal.REQUEST
     req.form['update_all'] = update_all
@@ -333,18 +330,19 @@ def setPolicyOnObject(obj, policy_in=None, policy_below=None):
         if policy_below is not None:
             config.setPolicyBelow(policy=policy_below)
 
-def runPortalMigration(site):
+def runPortalMigration():
     """Run any migrations that are pending
     """
-    portal = getSiteObj(site)
-    pm = getToolByName(site, 'portal_migration')
+    portal = getSite()
+    pm = getToolByName(portal, 'portal_migration')
     if pm.needUpgrading():
         pm.upgrade()
 
-def removeCustomFolderContent(site):
+def removeCustomFolderContent():
     """Remove everything in portal_skins/custom
     """
-    skins_tool = getToolByName(site, 'portal_skins')
+    portal = getSite()
+    skins_tool = getToolByName(portal, 'portal_skins')
     cf = skins_tool.custom
     cf_ids = cf.objectIds()
     # goodbye EVIL!!!
