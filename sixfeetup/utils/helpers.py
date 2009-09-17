@@ -257,10 +257,14 @@ def addRememberUserAccounts(member_dicts=[],
     passed on to processForm.
     
     initial_transition is the member workflow transition you want to run on 
-    the members
+    the members. Pass in a list to run multiple transitions.
     
     If send_emails is True then registration emails will be sent out to the users
     """
+    # BBB make sure a string or a list works
+    #     this used to be just one transition.
+    if isinstance(initial_transition, str):
+        initial_transition = [initial_transition]
     portal = getSite()
     # store the current prop
     current_setting = portal.validate_email
@@ -272,15 +276,16 @@ def addRememberUserAccounts(member_dicts=[],
     existing_members = mdata.contentIds()
     for mem in member_dicts:
         if mem['id'] not in existing_members:
-            mdata.invokeFactory('Member', id=mem['id'])
+            mdata.invokeFactory('Member', mem['id'])
             new_member = getattr(mdata, mem['id'])
             # remove id as it's already set
             del mem['id']
             # finalize creation of the member
             new_member.processForm(values=mem)
             # now we can register the member since it is 'valid'
-            # XXX this may be specific to the approval workflow...
-            wftool.doActionFor(new_member, initial_transition)
+            # XXX we default to the approval workflow
+            for transition in initial_transition:
+                wftool.doActionFor(new_member, transition)
             # reindex again to update the state info in the catalog
             new_member.reindexObject()
         else:
