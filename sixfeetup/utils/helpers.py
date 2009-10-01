@@ -239,7 +239,7 @@ def addUserAccounts(member_dicts=[]):
 
 def addRememberUserAccounts(member_dicts=[],
                             initial_transition="register_private",
-                            send_emails=False):
+                            send_emails=False, portal_type='Member'):
     """Add remember user accounts into the system
     
     Member dictionaries are in the following format::
@@ -276,7 +276,7 @@ def addRememberUserAccounts(member_dicts=[],
     existing_members = mdata.contentIds()
     for mem in member_dicts:
         if mem['id'] not in existing_members:
-            mdata.invokeFactory('Member', mem['id'])
+            mdata.invokeFactory(portal_type, mem['id'])
             new_member = getattr(mdata, mem['id'])
             # remove id as it's already set
             del mem['id']
