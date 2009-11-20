@@ -256,10 +256,13 @@ def addRememberUserAccounts(member_dicts=[],
     You can pass in more 'fieldName': 'values' in the dictionary, they will be
     passed on to processForm.
     
-    initial_transition is the member workflow transition you want to run on 
-    the members. Pass in a list to run multiple transitions.
+    initial_transition is the member workflow transition you want to
+    run on the members. Pass in a list to run multiple transitions.
+    Pass in a list of tuples (transition, comment) if you want to add
+    a comment to the transitions.
     
-    If send_emails is True then registration emails will be sent out to the users
+    If send_emails is True then registration emails will be sent out
+    to the users.
     """
     # BBB make sure a string or a list works
     #     this used to be just one transition.
@@ -285,7 +288,12 @@ def addRememberUserAccounts(member_dicts=[],
             # now we can register the member since it is 'valid'
             # XXX we default to the approval workflow
             for transition in initial_transition:
-                wftool.doActionFor(new_member, transition)
+                if isinstance(transition, tuple):
+                    comment = transition[1]
+                    transition = transition[0]
+                else:
+                    comment = ''
+                wftool.doActionFor(new_member, transition, comment=comment)
             # reindex again to update the state info in the catalog
             new_member.reindexObject()
         else:
