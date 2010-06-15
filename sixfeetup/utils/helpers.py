@@ -352,7 +352,8 @@ def runPortalMigration(context=None):
         pm.upgrade()
 
 def removeCustomFolderContent(del_args):
-    """Remove everything in portal_skins/custom
+    """Remove the elements from the argument list from portal_skins/custom.
+       Remove everything if the list is empty.
     """
     portal = getSite()
     skins_tool = getToolByName(portal, 'portal_skins')
