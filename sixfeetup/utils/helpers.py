@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def dateForProcessForm(field, field_date, form_dict=None):
     """Take a DateTime object or string and convert it into the keys that
     processForm expects
-    
+
     If form_dict is not passed in a dictionary will be passed back. Otherwise
     the form dictionary will be updated.
     """
@@ -49,7 +49,7 @@ def updateCatalog(context=None):
     pc = getToolByName(portal, 'portal_catalog')
     pc.refreshCatalog()
     logger.info('****** updateCatalog END ******')
-    
+
 def clearAndRebuildCatalog(context=None):
     """Clear and rebuild the catalog
     """
@@ -95,13 +95,13 @@ def deleteExportSteps(ids):
 
 def runUpgradeSteps(profile_id):
     """run the upgrade steps for the given profile_id in the form of:
-    
+
     profile-<package_name>:<profile_name>
-    
+
     example:
-    
+
     profile-my.package:default
-    
+
     Basically this is the code from GS.tool.manage_doUpgrades() in step
     form.  Had to extract the code because it was doing a redirect back to the
     upgrades form in the GS tool.
@@ -118,7 +118,7 @@ def runUpgradeSteps(profile_id):
                 steps_to_run.append(new_step['step'].id)
         else:
             steps_to_run.append(step['step'].id)
-    
+
     #################
     # from GS tool...
     ##################
@@ -141,7 +141,7 @@ def runUpgradeSteps(profile_id):
 
 def publishEverything(context=None, path=None, transition='publish', recursive=True):
     """Publishes all content that has the given transition
-    
+
     Pass in a PhysicalPath to publish a specific section
     """
     portal = getSite()
@@ -167,13 +167,13 @@ def publishEverything(context=None, path=None, transition='publish', recursive=T
 
 def runMigrationProfile(profile_id):
     """Run a migration profile as an upgrade step
-    
+
     profile_id in the form::
-    
+
       profile-<package_name>:<profile_name>
-    
+
     example::
-    
+
       profile-my.package:migration-2008-09-23
     """
     portal = getSite()
@@ -182,7 +182,7 @@ def runMigrationProfile(profile_id):
 
 def clearLocks(context=None, path=None, recursive=True):
     """Little util method to clear locks on a given path
-    
+
     Pass in a PhysicalPath to restrict to a specific section
     """
     portal = getSite()
@@ -205,9 +205,9 @@ def clearLocks(context=None, path=None, recursive=True):
 
 def addUserAccounts(member_dicts=[]):
     """Add user accounts into the system
-    
+
     Member dictionaries are in the following format::
-    
+
       {
         'id': 'joeblow',
         'password': '12345',
@@ -218,7 +218,7 @@ def addUserAccounts(member_dicts=[]):
           'username': 'joeblow',
          }
       }
-    
+
     Additional properties can be added in the properties item and will
     be passed along to the registration tool.
     """
@@ -241,9 +241,9 @@ def addRememberUserAccounts(member_dicts=[],
                             initial_transition="register_private",
                             send_emails=False, portal_type='Member'):
     """Add remember user accounts into the system
-    
+
     Member dictionaries are in the following format::
-    
+
       {
         'id': 'joeblow',
         'fullname': 'Joe Blow',
@@ -252,15 +252,15 @@ def addRememberUserAccounts(member_dicts=[],
         'confirm_password': '12345',
         'roles': ['Manager'],
       }
-    
+
     You can pass in more 'fieldName': 'values' in the dictionary, they will be
     passed on to processForm.
-    
+
     initial_transition is the member workflow transition you want to
     run on the members. Pass in a list to run multiple transitions.
     Pass in a list of tuples (transition, comment) if you want to add
     a comment to the transitions.
-    
+
     If send_emails is True then registration emails will be sent out
     to the users.
     """
@@ -306,13 +306,13 @@ def updateSchema(update_types=[],
                  update_all=False,
                  remove_inst_schemas=True):
     """Update archetype schemas for specific types
-    
+
     The update types is a list of strings like the following::
-    
+
       <product_or_package>.<meta_type>
-    
+
     Examples::
-    
+
       ATContentTypes.ATDocument
       my.package.SomeType
     """
@@ -327,11 +327,11 @@ def updateSchema(update_types=[],
 
 def setPolicyOnObject(obj, policy_in=None, policy_below=None):
     """Set the placeful workflow policy on an object
-    
+
     obj is the object we want to set the policy on
-    
+
     policy_in is the policy set only on the obj
-    
+
     policy_below is the policy set on all the items below obj
     """
     placeful_workflow = getToolByName(obj, 'portal_placeful_workflow')
@@ -351,12 +351,11 @@ def runPortalMigration(context=None):
     if pm.needUpgrading():
         pm.upgrade()
 
-def removeCustomFolderContent(context=None):
+def removeCustomFolderContent(*args):
     """Remove everything in portal_skins/custom
     """
     portal = getSite()
     skins_tool = getToolByName(portal, 'portal_skins')
     cf = skins_tool.custom
-    cf_ids = cf.objectIds()
     # goodbye EVIL!!!
-    cf.manage_delObjects(cf_ids)
+    cf.manage_delObjects((list)(args))
