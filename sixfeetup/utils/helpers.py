@@ -351,11 +351,14 @@ def runPortalMigration(context=None):
     if pm.needUpgrading():
         pm.upgrade()
 
-def removeCustomFolderContent(*args):
+def removeCustomFolderContent(del_args):
     """Remove everything in portal_skins/custom
     """
     portal = getSite()
     skins_tool = getToolByName(portal, 'portal_skins')
     cf = skins_tool.custom
+    if not del_args:
+        del_args = cf.objectIds()
     # goodbye EVIL!!!
-    cf.manage_delObjects((list)(args))
+    cf.manage_delObjects(del_args)
+
