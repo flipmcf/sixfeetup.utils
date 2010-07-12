@@ -363,3 +363,17 @@ def removeCustomFolderContent(del_args):
     # goodbye EVIL!!!
     cf.manage_delObjects(del_args)
 
+def removeLDAPPlugins():
+    """Remove the LDAP connections from acl_users
+    """
+    ldap_list = ['Plone Active Directory plugin',
+                 'Plone LDAP plugin',
+                 'LDAP Multi Plugin',
+                 'ActiveDirectory Multi Plugin']
+    acl = getSite().acl_users
+    to_delete = []
+    for value in acl.values():
+        if value.meta_type in ldap_list:
+            print "deleting the %s named: %s" %(value.meta_type, value.title)
+            to_delete.append(value.id)
+    acl.manage_delObjects(to_delete)
