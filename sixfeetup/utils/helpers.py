@@ -363,17 +363,46 @@ def removeCustomFolderContent(del_args):
     # goodbye EVIL!!!
     cf.manage_delObjects(del_args)
 
-def removeLDAPPlugins():
+def removeLDAPPlugins(portal=None):
     """Remove the LDAP connections from acl_users
     """
     ldap_list = ['Plone Active Directory plugin',
                  'Plone LDAP plugin',
                  'LDAP Multi Plugin',
                  'ActiveDirectory Multi Plugin']
-    acl = getSite().acl_users
-    to_delete = []
+    if portal is None:
+        portal = getSite()
+    acl = portal.acl_users
+    to_disable = []
     for value in acl.values():
         if value.meta_type in ldap_list:
-            print "deleting the %s named: %s" %(value.meta_type, value.title)
-            to_delete.append(value.id)
-    acl.manage_delObjects(to_delete)
+            to_disable.append(value.id)
+    for ldap_plugin_id in to_disable:
+        # turn off the ldap plugin for local testing
+        interfaces = [
+          "IAuthenticationPlugin",
+          "ICredentialsResetPlugin",
+          "IGroupEnumerationPlugin",
+          "IGroupIntrospection",
+          "IGroupManagement",
+          "IGroupsPlugin",
+          "IPropertiesPlugin",
+          "IRoleEnumerationPlugin",
+          "IRolesPlugin",
+          "IUserEnumerationPlugin"
+        ]
+        # this code is mostly taken from
+        # Products.PluggableAuthService.plugins.BasePlugin.manage_activateInterfaces
+        ldap_plugin = portal.acl_users[ldap_plugin_id]
+        pas_instance = ldap_plugin._getPAS()
+        plugins = pas_instance._getOb('plugins')
+        active_interfaces = []
+        for iface_name in interfaces:
+            active_interfaces.append(plugins._getInterfaceFromName(iface_name ))
+
+        for iface in active_interfaces:
+            try:
+                plugins.deactivatePlugin(iface, ldap_plugin_id)
+            except KeyError:
+                print "%s plugin already disabled for %s" % (iface, ldap_plugin_id)
+
