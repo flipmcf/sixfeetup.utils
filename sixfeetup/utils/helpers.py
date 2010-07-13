@@ -363,7 +363,7 @@ def removeCustomFolderContent(del_args):
     # goodbye EVIL!!!
     cf.manage_delObjects(del_args)
 
-def removeLDAPPlugins(portal=None):
+def disableLDAPPlugins(portal=None):
     """Remove the LDAP connections from acl_users
     """
     ldap_list = ['Plone Active Directory plugin',
