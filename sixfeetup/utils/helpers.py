@@ -351,25 +351,27 @@ def runPortalMigration(context=None):
     if pm.needUpgrading():
         pm.upgrade()
 
-def removeCustomFolderContent(del_args=[]):
-    """Remove the elements from the argument list from portal_skins/custom.
+def removeCustomContent(del_args=[], is_custom_folder=True):
+    """Remove the elements from the argument list from portal_skins/custom if
+       is_custom_folder is true, otherwise from the portal_view_customizations
        Remove everything if the list is empty.
     """
     portal = getSite()
-    skins_tool = getToolByName(portal, 'portal_skins')
-    cf = skins_tool.custom
-    if not del_args:
-        del_args = cf.objectIds()
+    custom_folder = getToolByName(portal, 'portal_skins').custom
+    if not is_custom_folder:
+        custom_folder = getToolByName(portal, "portal_view_customizations")
+    if is_custom_folder and not del_args:
+        del_args = custom_folder.objectIds()
 
     # goodbye EVIL!!!
     existfiles = []
     for del_arg in del_args:
-        if del_arg not in cf.objectIds():
+        if del_arg not in custom_folder.objectIds():
             logger.warning("*** FILE '%s' doesn't exist in the custom folder"\
                            % del_arg)
         else:
             existfiles.append(del_arg)
-    cf.manage_delObjects(existfiles)
+    custom_folder.manage_delObjects(existfiles)
 
 def disableLDAPPlugins(portal=None):
     """Disable the LDAP connections from acl_users
