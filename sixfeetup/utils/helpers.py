@@ -351,7 +351,7 @@ def runPortalMigration(context=None):
     if pm.needUpgrading():
         pm.upgrade()
 
-def removeCustomContent(del_args=[], is_custom_folder=True):
+def removeCustomContent(context=None, del_args=[], is_custom_folder=True):
     """Remove the elements from the argument list from portal_skins/custom if
        is_custom_folder is true, otherwise from the portal_view_customizations
        Remove everything if the list is empty.
