@@ -440,3 +440,13 @@ def disableLDAPPlugins(portal=None):
             except KeyError:
                 print "%s plugin already disabled for %s" % (
                     iface, ldap_plugin_id)
+
+
+def catalog_progress(context=None, progress=500):
+    """Set the catalog progress level so that we don't forget to
+    set it when it really counts.
+    """
+    portal = getSite()
+    catalog = getToolByName(portal, 'portal_catalog')
+    catalog.manage_setProgress(progress)
+    logger.warn("The catalog will now log progress at %s items" % progress)
