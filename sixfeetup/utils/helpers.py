@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 #####################################################
 # Random bits and pieces of code that could be useful
 
+
 def dateForProcessForm(field, field_date, form_dict=None):
     """Take a DateTime object or string and convert it into the keys that
     processForm expects
@@ -38,8 +39,10 @@ def dateForProcessForm(field, field_date, form_dict=None):
         return
     return form_dict
 
+
 ######################################################
 # Helpers for GenericSetup upgrades and setup handlers
+
 
 def updateCatalog(context=None):
     """Update the catalog
@@ -50,6 +53,7 @@ def updateCatalog(context=None):
     pc.refreshCatalog()
     logger.info('****** updateCatalog END ******')
 
+
 def clearAndRebuildCatalog(context=None):
     """Clear and rebuild the catalog
     """
@@ -59,6 +63,7 @@ def clearAndRebuildCatalog(context=None):
     pc.clearFindAndRebuild()
     logger.info('****** clearAndRebuildCatalog END ******')
 
+
 def updateSecurity(context=None):
     """Run the update security on the workflow tool"""
     logger.info('****** updateSecurity BEGIN ******')
@@ -67,8 +72,11 @@ def updateSecurity(context=None):
     wtool.updateRoleMappings()
     logger.info('****** updateSecurity END ******')
 
+#########################################################
 # GenericSetup forces a redirect on some of these methods, we are
 # basically rewriting them here without that.
+
+
 def deleteImportSteps(ids):
     """Remove a list of import step IDs
     """
@@ -81,6 +89,7 @@ def deleteImportSteps(ids):
             logger.info('Could not remove import step: %s' % step_id)
     setup_tool._p_changed = True
 
+
 def deleteExportSteps(ids):
     """Remove a list of export step IDs
     """
@@ -92,6 +101,7 @@ def deleteExportSteps(ids):
         except KeyError:
             logger.info('Could not remove import step: %s' % step_id)
     setup_tool._p_changed = True
+
 
 def runUpgradeSteps(profile_id):
     """run the upgrade steps for the given profile_id in the form of:
@@ -139,7 +149,9 @@ def runUpgradeSteps(profile_id):
 
     logger.info('****** runUpgradeSteps END ******')
 
-def publishEverything(context=None, path=None, transition='publish', recursive=True):
+
+def publishEverything(context=None, path=None, transition='publish',
+                      recursive=True):
     """Publishes all content that has the given transition
 
     Pass in a PhysicalPath to publish a specific section
@@ -165,6 +177,7 @@ def publishEverything(context=None, path=None, transition='publish', recursive=T
         except WorkflowException:
             logger.debug("\ncouldn't publish %s\n**********\n" % obj.Title())
 
+
 def runMigrationProfile(profile_id):
     """Run a migration profile as an upgrade step
 
@@ -179,6 +192,7 @@ def runMigrationProfile(profile_id):
     portal = getSite()
     setup_tool = getToolByName(portal, 'portal_setup')
     setup_tool.runAllImportStepsFromProfile(profile_id)
+
 
 def clearLocks(context=None, path=None, recursive=True):
     """Little util method to clear locks on a given path
@@ -202,6 +216,7 @@ def clearLocks(context=None, path=None, recursive=True):
         if locked:
             lock_ops = '%s/@@plone_lock_operations' % obj_path
             portal.restrictedTraverse(lock_ops).force_unlock(redirect=False)
+
 
 def addUserAccounts(member_dicts=[]):
     """Add user accounts into the system
@@ -236,6 +251,7 @@ def addUserAccounts(member_dicts=[]):
         except ValueError:
             msg = '\nlogin id %s is already taken...\n*********\n' % mem['id']
             logger.debug(msg)
+
 
 def addRememberUserAccounts(member_dicts=[],
                             initial_transition="register_private",
@@ -302,6 +318,7 @@ def addRememberUserAccounts(member_dicts=[],
     # but the property back
     portal.validate_email = current_setting
 
+
 def updateSchema(update_types=[],
                  update_all=False,
                  remove_inst_schemas=True):
@@ -325,6 +342,7 @@ def updateSchema(update_types=[],
         req.form[obj_type] = True
     portal.archetype_tool.manage_updateSchema(req)
 
+
 def setPolicyOnObject(obj, policy_in=None, policy_below=None):
     """Set the placeful workflow policy on an object
 
@@ -336,12 +354,14 @@ def setPolicyOnObject(obj, policy_in=None, policy_below=None):
     """
     placeful_workflow = getToolByName(obj, 'portal_placeful_workflow')
     if not base_hasattr(obj, '.wf_policy_config'):
-        obj.manage_addProduct['CMFPlacefulWorkflow'].manage_addWorkflowPolicyConfig()
+        cmfpw = 'CMFPlacefulWorkflow'
+        obj.manage_addProduct[cmfpw].manage_addWorkflowPolicyConfig()
         config = placeful_workflow.getWorkflowPolicyConfig(obj)
         if policy_in is not None:
             config.setPolicyIn(policy=policy_in)
         if policy_below is not None:
             config.setPolicyBelow(policy=policy_below)
+
 
 def runPortalMigration(context=None):
     """Run any migrations that are pending
@@ -350,6 +370,7 @@ def runPortalMigration(context=None):
     pm = getToolByName(portal, 'portal_migration')
     if pm.needUpgrading():
         pm.upgrade()
+
 
 def removeCustomContent(context=None, del_args=[], is_custom_folder=True):
     """Remove the elements from the argument list from portal_skins/custom if
@@ -372,6 +393,7 @@ def removeCustomContent(context=None, del_args=[], is_custom_folder=True):
         else:
             existfiles.append(del_arg)
     custom_folder.manage_delObjects(existfiles)
+
 
 def disableLDAPPlugins(portal=None):
     """Disable the LDAP connections from acl_users
@@ -402,17 +424,19 @@ def disableLDAPPlugins(portal=None):
           "IUserEnumerationPlugin"
         ]
         # this code is mostly taken from
-        # Products.PluggableAuthService.plugins.BasePlugin.manage_activateInterfaces
+        # Products.PluggableAuthService.
+        # plugins.BasePlugin.manage_activateInterfaces
         ldap_plugin = portal.acl_users[ldap_plugin_id]
         pas_instance = ldap_plugin._getPAS()
         plugins = pas_instance._getOb('plugins')
         active_interfaces = []
         for iface_name in interfaces:
-            active_interfaces.append(plugins._getInterfaceFromName(iface_name ))
+            active_interfaces.append(
+                plugins._getInterfaceFromName(iface_name))
 
         for iface in active_interfaces:
             try:
                 plugins.deactivatePlugin(iface, ldap_plugin_id)
             except KeyError:
-                print "%s plugin already disabled for %s" % (iface, ldap_plugin_id)
-
+                print "%s plugin already disabled for %s" % (
+                    iface, ldap_plugin_id)
