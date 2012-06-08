@@ -451,7 +451,13 @@ def catalog_progress(context=None, progress=500):
     catalog.manage_setProgress(progress)
     logger.warn("The catalog will now log progress at %s items" % progress)
 
-def refreshAssetRegistry(assets=['javascript', 'css']):
+def refreshAssetRegistry(assets=['javascripts', 'css', 'kss']):
+    """Refreshes an asset registry or all asset registries
+
+    The 'assets' kwarg can be a list with any combination of
+    'javascripts', 'css', 'kss'. By default, all of them are updated.
+    """
     portal = getSite()
     for entry in assets:
         registry = getToolByName(portal, 'portal_%s' % entry)
+        registry.cookResources()
