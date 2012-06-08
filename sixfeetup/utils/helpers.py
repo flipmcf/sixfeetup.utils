@@ -450,3 +450,8 @@ def catalog_progress(context=None, progress=500):
     catalog = getToolByName(portal, 'portal_catalog')
     catalog.manage_setProgress(progress)
     logger.warn("The catalog will now log progress at %s items" % progress)
+
+def refreshAssetRegistry(assets=['javascript', 'css']):
+    portal = getSite()
+    for entry in assets:
+        registry = getToolByName(portal, 'portal_%s' % entry)
