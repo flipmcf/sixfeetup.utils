@@ -1,4 +1,5 @@
 import logging
+import os
 from zope.app.component.hooks import getSite
 from DateTime import DateTime
 from Testing.makerequest import makerequest
@@ -461,3 +462,10 @@ def refreshAssetRegistry(assets=['javascripts', 'css', 'kss']):
     for entry in assets:
         registry = getToolByName(portal, 'portal_%s' % entry)
         registry.cookResources()
+
+def resolvePackageReference(reference):
+    """stolen from collective.transmogrifier.utils
+    """
+    package, filename = reference.strip().split(':', 1)
+    package = __import__(package, {}, {}, ('*',))
+    return os.path.join(os.path.dirname(package.__file__), filename)
