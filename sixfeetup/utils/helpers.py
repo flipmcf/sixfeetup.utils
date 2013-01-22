@@ -159,6 +159,7 @@ def publishEverything(context=None, path=None, transition='publish',
     """
     portal = getSite()
     pc = getToolByName(portal, 'portal_catalog')
+    wftool = getToolByName(portal, 'portal_workflow')
     query = {}
     if path is None:
         query['path'] = "/%s" % portal.id
@@ -168,15 +169,26 @@ def publishEverything(context=None, path=None, transition='publish',
         query['path'] = {'query': query['path'], 'depth': 0}
     res = pc(query)
     for result in res:
+        num_transitions = 0
         obj = result.getObject()
-        try:
-            obj.portal_workflow.doActionFor(
-                obj,
-                transition,
-                comment='Content published automatically'
-            )
-        except WorkflowException:
-            logger.debug("\ncouldn't publish %s\n**********\n" % obj.Title())
+        for wf in wftool.getWorkflowsFor(obj):
+            if wf.isActionSupported(obj, transition):
+                try:
+                    wf.doActionFor(
+                        obj,
+                        transition,
+                        comment='Content published automatically'
+                    )
+                    num_transitions += 1
+                except WorkflowException:
+                    logger.warning("\ncouldn't %s %s\n**********\n",
+                                   transition, obj.Title())
+            else:
+                logger.debug("\ncTransition not supported, %s: %s\n**********\n",
+                             wf.id, transition)
+        if not num_transitions:
+            logger.warning("\nNo transitions found, %s: %s\n**********\n",
+                           transition, obj.Title())
 
 
 def runMigrationProfile(profile_id):
