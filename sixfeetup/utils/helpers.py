@@ -184,7 +184,7 @@ def publishEverything(context=None, path=None, transition='publish',
                     logger.warning("\ncouldn't %s %s\n**********\n",
                                    transition, obj.Title())
             else:
-                logger.debug("\ncTransition not supported, %s: %s\n**********\n",
+                logger.debug("\nTransition not supported, %s: %s\n**********\n",
                              wf.id, transition)
         if not num_transitions:
             logger.warning("\nNo transitions found, %s: %s\n**********\n",
