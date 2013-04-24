@@ -4,6 +4,7 @@ from zope.app.component.hooks import getSite
 from DateTime import DateTime
 from Testing.makerequest import makerequest
 
+from Acquisition import aq_parent
 from Products.CMFCore.utils import getToolByName
 from Products.GenericSetup.upgrade import _upgrade_registry
 from Products.GenericSetup.registry import _profile_registry
@@ -481,3 +482,10 @@ def resolvePackageReference(reference):
     package, filename = reference.strip().split(':', 1)
     package = __import__(package, {}, {}, ('*',))
     return os.path.join(os.path.dirname(package.__file__), filename)
+
+
+def disable_acl_user_cache(context):
+    site = getSite()
+    zope_root = aq_parent(site)
+    zope_root.acl_users.ZCacheable_setManagerId(None)
+    zope_root.acl_users.ZCacheable_setEnabled(False)
