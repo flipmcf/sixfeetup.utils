@@ -489,3 +489,5 @@ def disable_acl_user_cache(context):
     zope_root = aq_parent(site)
     zope_root.acl_users.ZCacheable_setManagerId(None)
     zope_root.acl_users.ZCacheable_setEnabled(False)
+    site.acl_users.ZCacheable_setManagerId(None)
+    site.acl_users.ZCacheable_setEnabled(False)
