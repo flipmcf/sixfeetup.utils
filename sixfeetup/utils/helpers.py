@@ -1,6 +1,11 @@
 import logging
 import os
-from zope.app.component.hooks import getSite
+try:
+        # Plone < 4.3
+            from zope.app.component.hooks import getSite
+except ImportError:
+        # Plone >= 4.3
+            from zope.component.hooks import getSite # NOQA
 from DateTime import DateTime
 from Testing.makerequest import makerequest
 
