@@ -2,6 +2,7 @@
     xmlns="http://namespaces.zope.org/zope"
     xmlns:five="http://namespaces.zope.org/five"
     xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:monkey="http://namespaces.plone.org/monkey"
     i18n_domain="sixfeetup.utils">
 
   <browser:page
@@ -11,5 +12,19 @@
       permission="zope.Public"
       allowed_interface=".references.IReferenceUtils"
       />
+      
+  <monkey:patch
+    description="Ignore NotFound errors during buildout"
+    class="ZPublisher.HTTPResponse.HTTPResponse"
+    original="notFoundError"
+    replacement=".monkeypatch.notFoundError"
+    />
+    
+  <monkey:patch
+    description="Ignore NotFound errors during buildout"
+    class="ZPublisher.HTTPResponse.HTTPResponse"
+    original="forbiddenError"
+    replacement=".monkeypatch.forbiddenError"
+    />
 
 </configure>
