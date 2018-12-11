@@ -386,7 +386,9 @@ def runPortalMigration(context=None):
     """Run any migrations that are pending
     """
     portal = getSite()
-    pm = getToolByName(portal, 'portal_migration')
+    pm = getattr(
+        portal, 'portal_migration',
+        getToolByName(portal, 'portal_migration'))
     if pm.needUpgrading():
         pm.upgrade()
 
