@@ -1,13 +1,9 @@
 Changelog
 =========
 
-1.0 - Unreleased
-----------------
+2.17 - (2018-12-11)
+-------------------
 
 * Work around an issue with the upgrade from Plone from 5.1.2 to 5.1.4:
   `AttributeError: REQUEST`.
   [rpatterson]
-
-* Initial code creation
-  [ZopeSkel]
-
