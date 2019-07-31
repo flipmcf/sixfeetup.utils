@@ -1,4 +1,4 @@
-from zope.interface import implements, Interface
+from zope.interface import implementer, Interface
 from ZTUtils import LazyFilter
 from Products.Five import BrowserView
 
@@ -27,7 +27,7 @@ class IReferenceUtils(Interface):
 class ReferenceUtils(BrowserView):
     """see IReferenceUtils for documentation
     """
-    implements(IReferenceUtils)
+    implementer(IReferenceUtils)
 
     def _processRefs(self, refs, sort_on, reverse):
         """util method to run the refs through LazyFilter

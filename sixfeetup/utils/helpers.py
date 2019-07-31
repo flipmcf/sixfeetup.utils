@@ -459,8 +459,8 @@ def disableLDAPPlugins(portal=None):
             try:
                 plugins.deactivatePlugin(iface, ldap_plugin_id)
             except KeyError:
-                print "%s plugin already disabled for %s" % (
-                    iface, ldap_plugin_id)
+                print("{0} plugin already disabled for {1}".format(
+                    iface, ldap_plugin_id))
 
 
 def catalog_progress(context=None, progress=500):
