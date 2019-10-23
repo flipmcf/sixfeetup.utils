@@ -480,13 +480,10 @@ def refreshAssetRegistry(assets=['javascripts', 'css', 'kss']):
     """
     portal = getSite()
     for entry in assets:
-        if entry == 'kss':
-            try:
-                registry = getToolByName(portal, 'portal_%s' % entry)
-            except AttributeError:
-                continue
-        else:
+        try:
             registry = getToolByName(portal, 'portal_%s' % entry)
+        except AttributeError:
+            continue
         registry.cookResources()
 
 def resolvePackageReference(reference):
